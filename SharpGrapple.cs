@@ -39,8 +39,6 @@ namespace SharpGrapple
         }
         public override void Load(bool hotReload)
         {
-            Console.WriteLine("[SharpGrapple] Loading...");
-
             ConVar.Find("player_ping_token_cooldown")?.SetValue(0f);
 
             if (hotReload) Utilities.GetPlayers().ForEach(InitPlayer);
@@ -146,7 +144,14 @@ namespace SharpGrapple
                             var grappleWire = playerGrapples[player.Slot]?.GrappleWire;
                             if (grappleWire != null)
                             {
-                                grappleWire.Render = Color.LimeGreen;
+                                if (player?.Pawn?.Value?.TeamNum == (byte)CsTeam.Terrorist)
+                                {
+                                    grappleWire.Render = Color.Yellow;
+                                }
+                                if (player?.Pawn?.Value?.TeamNum == (byte)CsTeam.CounterTerrorist)
+                                {
+                                    grappleWire.Render = Color.DarkBlue;
+                                }
                                 grappleWire.Width = 1.5f;
                                 grappleWire.EndPos.X = grappleTarget.X;
                                 grappleWire.EndPos.Y = grappleTarget.Y;
@@ -158,15 +163,21 @@ namespace SharpGrapple
 
                         if (IsPlayerCloseToTarget(grappleTarget, playerPosition, 100))
                         {
-                            DetachGrapple(player);
-                            continue;
+                            if (player != null)
+                            {
+                                DetachGrapple(player);
+                                continue;
+                            }
                         }
 
                         var angleDifference = CalculateAngleDifference(new Vector(viewAngles.X, viewAngles.Y, viewAngles.Z), grappleTarget - playerPosition);
                         if (angleDifference > 180.0f)
                         {
-                            DetachGrapple(player);
-                            continue;
+                            if (player != null)
+                            {
+                                DetachGrapple(player);
+                                continue;
+                            }
                         }
 
                         if (player == null || player.PlayerPawn == null || player.PlayerPawn.Value.CBodyComponent == null || !player.IsValid || !player.PawnIsAlive || grappleTarget == null || viewAngles == null)
@@ -183,8 +194,6 @@ namespace SharpGrapple
                     }
                 }
             });
-
-            Console.WriteLine("[SharpGrapple] Plugin Loaded");
         }
 
         public void GrappleHandler(CCSPlayerController player, EventPlayerPing ping)
