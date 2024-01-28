@@ -2,10 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
@@ -14,8 +11,8 @@ namespace SharpGrapple
     public class PlayerGrappleInfo
     {
         public bool IsPlayerGrappling { get; set; }
-        public Vector GrappleRaycast { get; set; }
-        public CBeam GrappleWire { get; set; }
+        public Vector? GrappleRaycast { get; set; }
+        public CBeam? GrappleWire { get; set; }
     }
 
     [MinimumApiVersion(125)]
@@ -83,13 +80,16 @@ namespace SharpGrapple
 
             RegisterEventHandler<EventRoundEnd>((@event, info) =>
             {
-                var round_restart_delay = ConVar.Find("mp_round_restart_delay").GetPrimitiveValue<float>();
-
-                AddTimer(round_restart_delay - 0.1f, () =>
+                var conVar = ConVar.Find("mp_round_restart_delay");
+                if (conVar != null)
                 {
-                    Utilities.GetPlayers().ForEach(DetachGrapple);
-                });
-
+                    var round_restart_delay = conVar.GetPrimitiveValue<float>();
+                    AddTimer(round_restart_delay - 0.1f, () =>
+                    {
+                        Utilities.GetPlayers().ForEach(DetachGrapple);
+                    });
+                    return HookResult.Continue;
+                }
                 return HookResult.Continue;
             });
 
@@ -122,13 +122,13 @@ namespace SharpGrapple
                         if (player == null || player.PlayerPawn == null || player.PlayerPawn?.Value?.CBodyComponent == null || !player.IsValid || !player.PawnIsAlive)
                             continue;
 
-                        Vector playerPosition = player.PlayerPawn?.Value.CBodyComponent?.SceneNode?.AbsOrigin;
-                        QAngle viewAngles = player.PlayerPawn?.Value?.EyeAngles;
+                        Vector? playerPosition = player.PlayerPawn?.Value.CBodyComponent?.SceneNode?.AbsOrigin;
+                        QAngle? viewAngles = player.PlayerPawn?.Value?.EyeAngles;
 
                         if (playerPosition == null || viewAngles == null)
                             continue;
 
-                        Vector grappleTarget = playerGrapples[player.Slot].GrappleRaycast;
+                        Vector? grappleTarget = playerGrapples[player.Slot].GrappleRaycast;
                         if (grappleTarget == null)
                         {
                             continue;
