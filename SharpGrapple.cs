@@ -84,7 +84,6 @@ namespace SharpGrapple
             RegisterEventHandler<EventRoundEnd>((@event, info) =>
             {
                 var round_restart_delay = ConVar.Find("mp_round_restart_delay").GetPrimitiveValue<float>();
-                Server.PrintToChatAll($"{round_restart_delay}");
 
                 AddTimer(round_restart_delay - 0.1f, () =>
                 {
