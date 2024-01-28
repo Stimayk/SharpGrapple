@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using System;
 using System.Collections.Generic;
@@ -82,7 +83,14 @@ namespace SharpGrapple
 
             RegisterEventHandler<EventRoundEnd>((@event, info) =>
             {
-                Utilities.GetPlayers().ForEach(DetachGrapple);
+                var round_restart_delay = ConVar.Find("mp_round_restart_delay").GetPrimitiveValue<float>();
+                Server.PrintToChatAll($"{round_restart_delay}");
+
+                AddTimer(round_restart_delay - 0.1f, () =>
+                {
+                    Utilities.GetPlayers().ForEach(DetachGrapple);
+                });
+
                 return HookResult.Continue;
             });
 
